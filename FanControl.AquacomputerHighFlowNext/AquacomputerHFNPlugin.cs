@@ -5,9 +5,8 @@ using System.Threading;
 
 namespace FanControl.AquacomputerHighFlowNext
 {
-    public class AquacomputerHFNPlugin : IPlugin
+    public class AquacomputerHFNPlugin : IPlugin, IPlugin2
     {
-        private Timer timer;
         private HidLibrary.HidDevice HidDevice;
         internal ReaderWriterLock rwl = new ReaderWriterLock();
         internal HighFlowNextSensorsStructs.HighFlowNext_SensorData data = new HighFlowNextSensorsStructs.HighFlowNext_SensorData();
@@ -16,7 +15,6 @@ namespace FanControl.AquacomputerHighFlowNext
 
         public void Close()
         {
-            timer.Dispose();
             HidDevice.CloseDevice();
             HidDevice = null;
         }
@@ -28,8 +26,6 @@ namespace FanControl.AquacomputerHighFlowNext
 
             if (HidDevice == null)
                 return;
-
-            timer = new Timer(DataRefreshTimerCallback, null, 0, 1000);
         }
 
         public void Load(IPluginSensorsContainer _container)
@@ -41,7 +37,7 @@ namespace FanControl.AquacomputerHighFlowNext
             _container.FanSensors.Add(new BaseSensor(this, "Conductivity", "Conductivity", (x) => ((short)x) / 10.0f));
         }
 
-        private void DataRefreshTimerCallback(object state)
+        public void Update()
         {
             try
             {
