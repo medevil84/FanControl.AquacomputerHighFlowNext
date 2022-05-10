@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace FanControl.AquacomputerHighFlowNext
 {
-    public class AquacomputerHFNPlugin : IPlugin, IPlugin2
+    public class AquacomputerHFNPlugin : IPlugin2
     {
         private HidLibrary.HidDevice HidDevice;
         internal ReaderWriterLock rwl = new ReaderWriterLock();
