@@ -7,11 +7,19 @@ namespace FanControl.AquacomputerHighFlowNext
 {
     public class AquacomputerHFNPlugin : IPlugin2
     {
-        private HidLibrary.HidDevice HidDevice;
-        internal ReaderWriterLock rwl = new ReaderWriterLock();
-        internal HighFlowNextSensorsStructs.HighFlowNext_SensorData data = new HighFlowNextSensorsStructs.HighFlowNext_SensorData();
+        private HidLibrary.HidDevice HidDevice = null;
+        internal ReaderWriterLock rwl;
+        internal HighFlowNextSensorsStructs.HighFlowNext_SensorData data;
 
         public string Name => "Acquacomputer High Flow Next Plugin";
+
+        private readonly IPluginLogger _logger;
+        public AquacomputerHFNPlugin(IPluginLogger logger)
+        {
+            _logger = logger;
+            rwl = new ReaderWriterLock();
+            data = new HighFlowNextSensorsStructs.HighFlowNext_SensorData();
+        }
 
         public void Close()
         {
@@ -25,20 +33,30 @@ namespace FanControl.AquacomputerHighFlowNext
             HidDevice = (HidLibrary.HidDevice)hidEnumerator.Enumerate(0x0C70, 0xF012).FirstOrDefault();
 
             if (HidDevice == null)
+            {
+                _logger.Log("AquacomputerHFNPlugin: ERROR! Unable to find device!");
                 return;
+            }
+
         }
 
         public void Load(IPluginSensorsContainer _container)
         {
-            _container.TempSensors.Add(new BaseSensor(this, "TemperatureWater", "Water Temperature", (x) => ((short)x) / 100.0f));
-            _container.TempSensors.Add(new BaseSensor(this, "TemperatureExt", "External Water Temperature", (x) => ((short)x) / 100.0f));
-            _container.FanSensors.Add(new BaseSensor(this, "Flow", "Flow", (x) => ((short)x) / 10.0f));
-            _container.FanSensors.Add(new BaseSensor(this, "WaterQuality", "Water Quality", (x) => ((short)x) / 10.0f));
-            _container.FanSensors.Add(new BaseSensor(this, "Conductivity", "Conductivity", (x) => ((short)x) / 10.0f));
+            if (HidDevice != null)
+            {
+                _container.TempSensors.Add(new BaseSensor(this, "TemperatureWater", "Water Temperature", (x) => ((short)x) / 100.0f));
+                _container.TempSensors.Add(new BaseSensor(this, "TemperatureExt", "External Water Temperature", (x) => ((short)x) / 100.0f));
+                _container.FanSensors.Add(new BaseSensor(this, "Flow", "Flow", (x) => ((short)x) / 10.0f));
+                _container.FanSensors.Add(new BaseSensor(this, "WaterQuality", "Water Quality", (x) => ((short)x) / 100.0f));
+                _container.FanSensors.Add(new BaseSensor(this, "Conductivity", "Conductivity", (x) => ((short)x) / 10.0f));
+            }
         }
 
         public void Update()
         {
+            if (HidDevice == null)
+                return;
+
             try
             {
                 rwl.AcquireWriterLock(100);
@@ -58,7 +76,8 @@ namespace FanControl.AquacomputerHighFlowNext
                 {
                     rwl.ReleaseWriterLock();
                 }
-            } catch (ApplicationException) { 
+            } catch (ApplicationException ex) {
+                _logger.Log("AquacomputerHFNPlugin Exception: " + ex);
             }
         }
     }
