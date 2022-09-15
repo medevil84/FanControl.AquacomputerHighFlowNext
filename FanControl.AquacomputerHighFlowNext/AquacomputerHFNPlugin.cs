@@ -23,7 +23,8 @@ namespace FanControl.AquacomputerHighFlowNext
 
         public void Close()
         {
-            HidDevice.CloseDevice();
+            if (HidDevice != null)
+                HidDevice.CloseDevice();
             HidDevice = null;
         }
 
