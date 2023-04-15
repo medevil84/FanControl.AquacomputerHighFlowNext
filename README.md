@@ -1,3 +1,7 @@
+## *** OUTDATED ***
+
+This plugin has been replaced by the newest [FanControl.AquacomputerDevices](https://github.com/medevil84/FanControl.AquacomputerDevices). Please check it out!
+
 # FanControl.AquacomputerHighFlowNext
 [FanControl](https://github.com/Rem0o/FanControl.Releases) Plugin for the Aquacomputer High Flow Next Device
 
